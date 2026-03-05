@@ -13,7 +13,7 @@ class Task:
         """
         self.__title = title
         self.__description = description
-        self.__priority = priority
+        self.priority = priority          # используем сеттер для проверки
         self.__completed = False
         self.__created_at = datetime.now()
         self.__completed_at = None
@@ -81,12 +81,7 @@ class Task:
     def __str__(self):
         """Магический метод для строкового представления задачи"""
         status = "✓" if self.__completed else "○"
-        priority_symbol = {
-            "низкий": "⬇️",
-            "средний": "➡️",
-            "высокий": "⬆️"
-        }.get(self.__priority, "")
-        # Берём первые 30 символов описания, если оно длинное
+        priority_symbol = self.get_priority_emoji(self.__priority)
         short_desc = self.__description[:30] + "..." if len(self.__description) > 30 else self.__description
         return f"{status} [{priority_symbol}] {self.__title} - {short_desc}"
 
@@ -102,50 +97,35 @@ class Task:
             info += "Статус: Не выполнена"
         return info
 
+    @staticmethod
+    def validate_priority(priority):
+        """Проверяет корректность приоритета"""
+        valid_priorities = ["низкий", "средний", "высокий"]
+        return priority in valid_priorities
 
-class ImportantTask(Task):
-    """Класс для важных задач (наследник Task)"""
+    @staticmethod
+    def get_priority_emoji(priority):
+        """Возвращает эмодзи для приоритета"""
+        emojis = {
+            "низкий": "⬇️",
+            "средний": "➡️",
+            "высокий": "⬆️"
+        }
+        return emojis.get(priority, "❓")
 
-    def __init__(self, title: str, description: str = "", deadline: str = "сегодня"):
+    @classmethod
+    def create_from_string(cls, task_string: str):
         """
-        Конструктор важной задачи
-        Args:
-            title: Название задачи
-            description: Описание
-            deadline: Дедлайн
+        Создает задачу из строки формата: "Название | Описание | Приоритет"
         """
-        # Вызываем конструктор родителя с приоритетом "высокий"
-        super().__init__(title, description, priority="высокий")
-        self.__deadline = deadline
-        self.__reminder_set = False
-
-    @property
-    def deadline(self):
-        return self.__deadline
-
-    @deadline.setter
-    def deadline(self, new_deadline):
-        if isinstance(new_deadline, str) and new_deadline.strip():
-            self.__deadline = new_deadline
-        else:
-            raise ValueError("Дедлайн не может быть пустым")
-
-    def set_reminder(self):
-        """Установить напоминание"""
-        self.__reminder_set = True
-        print(f"⏰ Напоминание установлено для задачи '{self.title}'")
-
-    # Переопределяем метод __str__
-    def __str__(self):
-        """Переопределенный метод для важных задач"""
-        base_str = super().__str__()
-        reminder = "✅" if self.__reminder_set else "⏰"
-        return f"{base_str} [Дедлайн: {self.__deadline}] {reminder}"
-
-    # Переопределяем метод get_info
-    def get_info(self):
-        """Расширенная информация для важной задачи"""
-        base_info = super().get_info()
-        base_info += f"\nДедлайн: {self.__deadline}"
-        base_info += f"\nНапоминание: {'установлено' if self.__reminder_set else 'не установлено'}"
-        return base_info
+        try:
+            parts = task_string.split('|')
+            title = parts[0].strip()
+            description = parts[1].strip() if len(parts) > 1 else ""
+            priority = parts[2].strip() if len(parts) > 2 else "средний"
+            if not cls.validate_priority(priority):
+                priority = "средний"
+            return cls(title, description, priority)
+        except Exception as e:
+            print(f"Ошибка создания задачи из строки: {e}")
+            return None
