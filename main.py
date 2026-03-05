@@ -1,79 +1,54 @@
-from task import Task
+from task import Task, ImportantTask
+from manager import TaskManager
 
 def main():
-    """Главная функция для тестирования класса Task"""
-    print("=== СОЗДАНИЕ ЗАДАЧ ===\n")
+    print("=== ТЕСТИРОВАНИЕ TASK MANAGER ===\n")
 
-    # Создаём несколько задач
-    task1 = Task(
-        "Купить продукты",
-        "Молоко, хлеб, яйца, сыр",
-        "высокий"
+    # Создаем менеджер задач
+    my_tasks = TaskManager("Мои задачи")
+
+    # Создаем обычные задачи
+    task1 = Task("Купить продукты", "Молоко, хлеб", "средний")
+    task2 = Task("Сделать зарядку", "30 минут утром", "низкий")
+
+    # Создаем важную задачу (наследник)
+    important_task = ImportantTask(
+        "Сдать проект",
+        "Подготовить презентацию",
+        "пятница 18:00"
     )
-    task2 = Task(
-        "Сделать домашнее задание",
-        "Решить задачи по математике",
-        "средний"
-    )
-    task3 = Task(
-        "Позвонить родителям",
-        priority="низкий"
-    )
+    important_task.set_reminder()
 
-    # Выводим краткую информацию
-    print("Краткая информация:")
-    print(task1)
-    print(task2)
-    print(task3)
+    # Добавляем задачи в менеджер
+    my_tasks.add_task(task1)
+    my_tasks.add_task(task2)
+    my_tasks.add_task(important_task)
 
-    print("\n=== ТЕСТИРОВАНИЕ МЕТОДОВ ===\n")
+    # Показываем все задачи (полиморфизм!)
+    my_tasks.show_all_tasks()
 
-    # Изменяем приоритет
-    print(f"Старый приоритет task1: {task1.priority}")
-    task1.priority = "средний"
-    print(f"Новый приоритет task1: {task1.priority}")
+    print("\n=== ДЕТАЛЬНАЯ ИНФОРМАЦИЯ ===\n")
+    print(important_task.get_info())
 
-    # Изменяем описание
-    print(f"\nСтарое описание task1: {task1.description}")
-    task1.description = "Новый список: молоко, хлеб, масло"
-    print(f"Новое описание task1: {task1.description}")
+    print("\n=== ФИЛЬТРАЦИЯ ===\n")
+    # Получаем задачи по приоритету
+    high_priority = my_tasks.get_tasks_by_priority("высокий")
+    print("Задачи с высоким приоритетом:")
+    for task in high_priority:
+        print(f" - {task}")
 
     # Отмечаем задачу выполненной
-    print("\n--- Отметка о выполнении ---")
-    task2.mark_completed()
-    task2.mark_completed()  # попытка отметить повторно
+    task1.mark_completed()
 
-    # Проверка дат
-    print(f"\nДата создания task2: {task2.created_at.strftime('%d.%m.%Y %H:%M:%S')}")
-    if task2.completed_at:
-        print(f"Дата выполнения task2: {task2.completed_at.strftime('%d.%m.%Y %H:%M:%S')}")
+    print("\n=== СТАТИСТИКА ===\n")
+    print(my_tasks)
 
-    # Проверяем, что повторная отметка не меняет дату выполнения
-    first_completed = task2.completed_at
-    task2.mark_completed()  # ещё раз
-    if task2.completed_at == first_completed:
-        print("Повторный вызов не изменил дату выполнения (OK)")
-    else:
-        print("Ошибка: дата выполнения изменилась!")
-
-    print("\n=== ПОЛНАЯ ИНФОРМАЦИЯ ===\n")
-    print(task1.get_info())
-    print("\n" + "=" * 40 + "\n")
-    print(task2.get_info())
-
-    print("\n=== ПРОВЕРКА ВАЛИДАЦИИ ===\n")
-
-    # Некорректный приоритет
-    try:
-        task3.priority = "очень высокий"
-    except ValueError as e:
-        print(f"Ошибка при смене приоритета: {e}")
-
-    # Пустое название
-    try:
-        task3.title = ""
-    except ValueError as e:
-        print(f"Ошибка при смене названия: {e}")
+    # Поиск задач
+    print("\n=== ПОИСК ===\n")
+    found = my_tasks.find_tasks("проект")
+    print("Найденные задачи:")
+    for task in found:
+        print(f" - {task}")
 
 if __name__ == "__main__":
     main()
