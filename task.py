@@ -1,0 +1,109 @@
+from datetime import datetime
+
+
+class Task:
+    """Класс, представляющий задачу"""
+
+    PRIORITY_SYMBOLS = {
+        "низкий": "⬇️",
+        "средний": "➡️",
+        "высокий": "⬆️"
+    }
+
+    def __init__(self, title: str, description: str = "", priority: str = "средний"):
+        """
+        Конструктор класса Task
+        Args:
+            title: Название задачи
+            description: Описание задачи
+            priority: Приоритет (низкий, средний, высокий)
+        """
+        self.__title = title
+        self.__description = description
+        self.priority = priority  # используем сеттер для проверки
+        self.__completed = False
+        self.__created_at = datetime.now()
+        self.__completed_at = None
+
+    # Геттеры и сеттеры для title
+    @property
+    def title(self):
+        return self.__title
+
+    @title.setter
+    def title(self, new_title):
+        if isinstance(new_title, str) and new_title.strip():
+            self.__title = new_title
+        else:
+            raise ValueError("Название задачи не может быть пустым")
+
+    # Геттеры и сеттеры для description
+    @property
+    def description(self):
+        return self.__description
+
+    @description.setter
+    def description(self, new_description):
+        if isinstance(new_description, str):
+            self.__description = new_description
+        else:
+            raise ValueError("Описание должно быть строкой")
+
+    # Геттеры и сеттеры для priority
+    @property
+    def priority(self):
+        return self.__priority
+
+    @priority.setter
+    def priority(self, new_priority):
+        valid_priorities = ["низкий", "средний", "высокий"]
+        if new_priority in valid_priorities:
+            self.__priority = new_priority
+        else:
+            raise ValueError(f"Приоритет должен быть одним из: {valid_priorities}")
+
+    # Геттер для completed (только чтение)
+    @property
+    def completed(self):
+        return self.__completed
+
+    # Геттеры для дат
+    @property
+    def created_at(self):
+        return self.__created_at
+
+    @property
+    def completed_at(self):
+        return self.__completed_at
+
+    def mark_completed(self):
+        """Отметить задачу как выполненную"""
+        if not self.__completed:
+            self.__completed = True
+            self.__completed_at = datetime.now()
+            print(f"Задача '{self.__title}' отмечена как выполненная")
+        else:
+            print(f"Задача '{self.__title}' уже была выполнена")
+
+    def __str__(self):
+        """Магический метод для строкового представления задачи"""
+        status = "✓" if self.__completed else "○"
+        priority_symbol = self.PRIORITY_SYMBOLS.get(self.__priority, "")
+        # Берём первые 30 символов описания, если оно длинное
+        short_desc = self.__description[:30] + "..." if len(self.__description) > 30 else self.__description
+        return f"{status} [{priority_symbol}] {self.__title} - {short_desc}"
+
+    def get_info(self):
+        """Полная информация о задаче"""
+        info = f"Задача: {self.__title}\n"
+        info += f"Описание: {self.__description}\n"
+        info += f"Приоритет: {self.__priority}\n"
+        info += f"Создана: {self.__created_at.strftime('%d.%m.%Y %H:%M')}\n"
+        if self.__completed:
+            info += f"Выполнена: {self.__completed_at.strftime('%d.%m.%Y %H:%M')}"
+        else:
+            info += "Статус: Не выполнена"
+        return info
+
+    def __repr__(self):
+        return f"Task(title={self.__title!r}, priority={self.__priority!r}, completed={self.__completed})"
